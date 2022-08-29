@@ -1,0 +1,100 @@
+﻿@page "/generos"
+@inject IRepositorio repositorio
+@inject IMostrarMensajes mostrarMensajes
+@inject NavigationManager navigationManager
+@attribute [Authorize(Roles = "admin")]
+
+
+
+<ListadoGenerico Listado="Generos">
+    <HayRegistrosCompleto>
+        <MudText Typo="Typo.h3">Indice Géneros</MudText>
+        <MudTable Items="@Generos" Dense="@dense" Hover="@hover" Bordered="@bordered" Filter="new Func<Genero,bool>(FilterFunc1)">
+            <ToolBarContent>
+                <MudButton @onclick="IrCrearGenero" Variant="Variant.Filled" Color="Color.Info">Agregar Género</MudButton>
+                <MudSpacer />
+                <MudTextField @bind-Value="searchString1" Placeholder="Buscar" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" AdornmentColor="Color.Info" Class="mt-0"></MudTextField>
+            </ToolBarContent>
+            <HeaderContent>
+                <MudTh></MudTh>
+                <MudTh>Nombre</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd>
+                    <MudButton @onclick="@(() => IrEditarGenero(context.Id))" Variant="Variant.Filled" Color="Color.Success">Editar</MudButton>
+                    <MudIconButton @onclick="@(() => BorrarGenero(context))" Icon="@Icons.Rounded.Delete" Color="Color.Error"></MudIconButton>
+                </MudTd>
+                <MudTd DataLabel="Nombre">@context.Nombre</MudTd>
+            </RowTemplate>
+            <PagerContent>
+                <MudTablePager Style="display: flex; flex-wrap: wrap;justify-content:center; text-align:center;" PageSizeOptions="new int[] {15,25,50,75,100,150,200}" RowsPerPageString="Paginacion" InfoFormat="{first_item}-{last_item} Total: {all_items}" />
+            </PagerContent>
+        </MudTable>
+    </HayRegistrosCompleto>
+</ListadoGenerico>
+
+@code {
+    public List<Genero> Generos { get; set; }
+
+    protected async override Task OnInitializedAsync()
+    {
+        await Cargar();
+    }
+
+    private async Task Cargar()
+    {
+        var responseHttp = await repositorio.Get<List<Genero>>("api/generos");
+        Generos = responseHttp.Response;
+    }
+
+
+
+
+
+    private void IrEditarGenero(int id)
+    {
+        navigationManager.NavigateTo($"generos/editar/{id}");
+    }
+
+    private void IrCrearGenero()
+    {
+        navigationManager.NavigateTo("generos/crear");
+    }
+
+    private async Task BorrarGenero(Genero genero)
+    {
+        var responseHttp = await repositorio.Delete($"api/generos/{genero.Id}");
+        if (responseHttp.Error)
+        {
+            await mostrarMensajes.MostrarMensajeError(await responseHttp.GetBody());
+        }
+        else
+        {
+            await Cargar();
+        }
+
+    }
+
+
+
+
+
+    private bool dense = true;
+    private bool hover = true;
+    private bool bordered = true;
+    private HashSet<Genero> selectedItems = new HashSet<Genero>();
+
+    //buscador
+    private string searchString1 = "";
+    private bool FilterFunc1(Genero element) => FilterFunc(element, searchString1);
+    private bool FilterFunc(Genero element, string searchString)
+    {
+        if (string.IsNullOrWhiteSpace(searchString))
+            return true;
+        if (element.Nombre.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if ($"{element.Nombre}".Contains(searchString))
+            return true;
+        return false;
+    }
+}

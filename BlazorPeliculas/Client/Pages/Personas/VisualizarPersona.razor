@@ -1,0 +1,55 @@
+﻿@page "/personas/ver/{PersonaId:int}"
+@inject IRepositorio repositorio
+@inject IMostrarMensajes mostrarMensaje
+@inject NavigationManager navigationManager
+
+@if (Persona == null)
+{
+    <MudProgressLinear Color="Color.Info" Indeterminate="true" Class="my-7" />
+}
+else
+{
+    <MudText Typo="Typo.h3">@Persona.Nombre</MudText>
+    <MudText Typo="Typo.button"> Fecha De Nacimiento: </MudText>
+
+    <MudText Typo="Typo.caption">@Persona.FechaNacimiento</MudText>
+    <div style="display:flex;">
+        <span style="display: inline-block; margin-right: 5px;"><img src="@Persona.Foto" style="width: 225px; height: 315px" /></span>
+        <span style="width:560px; height:315px;"><MostrarMarkdown ContenidoMarkdown="@Persona.Biografia" /></span>
+    </div>
+}
+
+
+@code {
+    [Parameter] public int PersonaId { get; set; }
+    Persona Persona;
+    private string imagenURL;
+    private void ImagenSeleccionada(string imagenBase64)
+    {
+        Persona.Foto = imagenBase64;
+        imagenURL = null;
+    }
+
+    protected async override Task OnInitializedAsync()
+    {
+        var httpResponse = await repositorio.Get<Persona>($"api/personas/{PersonaId}");
+
+        if (httpResponse.Error)
+        {
+            if (httpResponse.HttpResponseMessage.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                navigationManager.NavigateTo("personas");
+            }
+            else
+            {
+                await mostrarMensaje.MostrarMensajeError(await httpResponse.GetBody());
+            }
+        }
+        else
+        {
+            Console.WriteLine("else");
+            Persona = httpResponse.Response;
+            Console.WriteLine(Persona.Foto);
+        }
+    }
+}

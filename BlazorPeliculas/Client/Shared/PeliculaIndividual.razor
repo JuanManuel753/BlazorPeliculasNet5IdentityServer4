@@ -1,0 +1,61 @@
+﻿@inject NavigationManager navigationManager
+
+<div style="margin-right: 2%; margin-bottom: 60px; text-align: center;">
+    <a href="@urlPelicula">
+        <img src="@Pelicula.Poster" alt="Poster" style="width: 225px; height:300px;" />
+    </a>
+    <MudText Style="max-width: 225px; height: 44px; font-size: 15px; font-weight: bold;" Typo="Typo.h1"><a href="@urlPelicula">@Pelicula.TituloCortado</a></MudText>
+    <div>
+        <AuthorizeView Roles="admin">
+            <Authorized>
+                <MudButton OnClick="IrAEditar" Variant="Variant.Filled" Color="Color.Info">Editar</MudButton>
+
+                <MudButton Variant="Variant.Filled" Color="Color.Error"
+                           @onclick="msjbox">
+                    Borrar
+                </MudButton>
+
+                <MudMessageBox @ref="mbox" Title="¡CUIDADO!" CancelText="Cancelar">
+                    <MessageContent>
+                        ¡La eliminación <b><i>NO</i></b> se puede deshacer!
+                    </MessageContent>
+                    <YesButton>
+                        <MudButton @onclick="@(() => EliminarPelicula.InvokeAsync(Pelicula))" Variant="Variant.Filled" Color="Color.Error" StartIcon="@Icons.Material.Filled.DeleteForever">Borrar</MudButton>
+                    </YesButton>
+                </MudMessageBox>
+
+            </Authorized>
+        </AuthorizeView>
+
+
+
+    </div>
+</div>
+
+@code {
+    [Parameter] public Pelicula Pelicula { get; set; }
+    [Parameter] public bool MostrarBotones { get; set; } = false;
+    [Parameter] public EventCallback<Pelicula> EliminarPelicula { get; set; }
+    private string urlPelicula = string.Empty;
+
+    protected override void OnInitialized()
+    {
+        urlPelicula = $"pelicula/{Pelicula?.Id}/{Pelicula?.Titulo?.Replace(" ", "-")}";
+    }
+
+    private void IrAEditar()
+    {
+        navigationManager.NavigateTo($"peliculas/editar/{Pelicula.Id}");
+    }
+
+
+
+    MudMessageBox mbox { get; set; }
+    string state = "Message box No Ha sido Abierto";
+    private async void msjbox()
+    {
+        bool? result = await mbox.Show();
+        state = result == null ? "Cancelar" : "Borrar!";
+        StateHasChanged();
+    }
+}

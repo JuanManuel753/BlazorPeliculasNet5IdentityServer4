@@ -1,0 +1,16 @@
+﻿<EditForm Model="Genero" OnValidSubmit="OnValidSubmit">
+    <DataAnnotationsValidator />
+    <div class="form-group">
+        <div>
+            <MudTextField @bind-Value="Genero.Nombre" Label="Nombre Del Genero" Variant="Variant.Outlined" />
+            <ValidationMessage For="@(() => Genero.Nombre)" />
+        </div>
+    </div>
+    <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Success" EndIcon="@Icons.Rounded.Save">Guardar</MudButton>
+</EditForm>
+
+@code {
+    [Parameter] public Genero Genero { get; set; }
+    [Parameter] public EventCallback OnValidSubmit { get; set; }
+}
+

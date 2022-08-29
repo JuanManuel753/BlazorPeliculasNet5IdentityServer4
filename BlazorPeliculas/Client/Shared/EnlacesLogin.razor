@@ -1,0 +1,24 @@
+﻿@inject NavigationManager navigationManager
+@inject IMostrarMensajes mostrarMensajes
+<AuthorizeView>
+    <Authorized>
+        <div style="color:white;">
+            <MudText Typo="Typo.subtitle2">@context.User.Identity.Name!</MudText>
+        </div>
+        <div style="margin-left:8px; color:white;">
+            <MudIconButton @onclick="CerrarSesion" Icon="@Icons.Filled.ExitToApp"  Color="Color.Error" aria-label="Cerrar Sesion"/>
+        </div>
+    </Authorized>
+    <NotAuthorized>
+        <MudLink Href="Registro" Underline="Underline.None" Class="mud-theme-primary">Registro</MudLink>
+        <MudLink Href="Login" Underline="Underline.None" Style="margin-left:8px;" Class="mud-theme-primary">Iniciar Sesion</MudLink>
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    private async void CerrarSesion()
+    {
+        await mostrarMensajes.MostrarMensajeExitoso("Sesion Finalizada");
+        navigationManager.NavigateTo("Logout");
+    }
+}

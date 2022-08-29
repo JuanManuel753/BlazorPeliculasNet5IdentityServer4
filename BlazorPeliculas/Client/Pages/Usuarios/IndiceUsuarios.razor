@@ -1,0 +1,68 @@
+﻿@page "/usuarios"
+@inject IRepositorio repositorio
+@inject IMostrarMensajes mostrarMensajes
+@inject NavigationManager navigationManager
+
+<ListadoGenerico Listado="Usuarios">
+    <HayRegistrosCompleto>
+        <MudTable Items="@Usuarios" Dense="true" Hover="true" Bordered="true" >
+            <ToolBarContent>
+                <MudText Typo="Typo.h3">Indice Personas</MudText>
+            </ToolBarContent>
+            <HeaderContent>
+                <MudTh></MudTh>
+                <MudTh>Usuario</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd>
+                    <MudButton @onclick="(() => IrEditarUsuarios(context.UserId))" Variant="Variant.Filled" Color="Color.Success">Editar</MudButton>
+                </MudTd>
+                <MudTd DataLabel="Usuario">@context.Email</MudTd>
+            </RowTemplate>
+            <PagerContent>
+                <MudTablePager Style="display: flex; flex-wrap: wrap;justify-content:center; text-align:center;" PageSizeOptions="new int[] {15,25,50,75,100,150,200}" RowsPerPageString="Paginacion" InfoFormat="{first_item}-{last_item} Total: {all_items}" />
+            </PagerContent>
+        </MudTable>
+
+    </HayRegistrosCompleto>
+</ListadoGenerico>
+
+@code {
+    List<UsuarioDTO> Usuarios;
+    private bool dense = true;
+    private bool hover = true;
+    private bool bordered = true;
+    protected override async Task OnInitializedAsync()
+    {
+        await Cargar();
+    }
+
+    private void IrEditarUsuarios(string id)
+    {
+        navigationManager.NavigateTo($"usuario/editar/{id}");
+    }
+
+    //paginacion javascript
+    private int paginaActual = 1;
+    private int PaginasTotales;
+
+    private async Task PaginaSeleccionada(int pagina)
+    {
+        paginaActual = pagina;
+        await Cargar(pagina);
+    }
+
+    private async Task Cargar(int pagina = 1)
+    {
+        var httpResponse = await repositorio.Get<List<UsuarioDTO>>($"api/usuarios?pagina={pagina}");
+        if (httpResponse.Error)
+        {
+            await mostrarMensajes.MostrarMensajeError(await httpResponse.GetBody());
+        }
+        else
+        {
+            PaginasTotales = int.Parse(httpResponse.HttpResponseMessage.Headers.GetValues("totalPaginas").FirstOrDefault());
+            Usuarios = httpResponse.Response;
+        }
+    }
+}

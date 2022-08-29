@@ -1,0 +1,27 @@
+﻿<MudPaper Width="250px" Class="py-3" Elevation="0" Style="background:none;">
+    <MudNavMenu Color="Color.Inherit" Bordered="true">
+        <MudNavLink Href="/" Icon="@Icons.Rounded.Home" IconColor="Color.Inherit" Style="color:white;">Inicio</MudNavLink>
+        <MudNavLink Href="counter" Icon="@Icons.Rounded.Add" IconColor="Color.Inherit" Style="color:white;">Counter</MudNavLink>
+        <MudNavLink Href="peliculas/buscar" Icon="@Icons.Filled.SavedSearch" IconColor="Color.Inherit" Style="color:white;">Filtro Peliculas</MudNavLink>
+
+        <AuthorizeView Roles="admin">
+            <Authorized>
+                <MudNavLink Href="generos" Icon="@Icons.Rounded.KeyboardArrowRight" IconColor="Color.Inherit" Style="color:white;">Generos</MudNavLink>
+                <MudNavLink Href="personas" Icon="@Icons.Rounded.RecentActors" IconColor="Color.Inherit" Style="color:white;">Personas</MudNavLink>
+                <MudNavLink Href="peliculas/crear" Icon="@Icons.Rounded.MovieFilter" IconColor="Color.Inherit" Style="color:white;">Crear Pelicula</MudNavLink>
+                <MudNavLink Href="usuarios" Icon="@Icons.Rounded.MovieFilter" IconColor="Color.Inherit" Style="color:white;">Usuarios</MudNavLink>
+            </Authorized>
+        </AuthorizeView>
+    </MudNavMenu>
+</MudPaper>
+
+@code {
+    private bool collapseNavMenu = true;
+
+    private string NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+
+    private void ToggleNavMenu()
+    {
+        collapseNavMenu = !collapseNavMenu;
+    }
+}

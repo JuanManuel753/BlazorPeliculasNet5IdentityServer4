@@ -1,0 +1,62 @@
+﻿@page "/Registro"
+
+@inject IRepositorio repositorio
+@inject NavigationManager navigationManager
+@inject ILoginService loginService
+@inject IMostrarMensajes mostrarMensajes
+
+<EditForm Model="@userInfo" OnValidSubmit="CrearUsuario">
+    <DataAnnotationsValidator />
+    <MudPaper Elevation="4" Class="py-8 px-10" Style="width:1096px;">
+        <MudText Typo="Typo.h4" Style="text-align:center;">Registro</MudText>
+        <div class="form-group">
+            <div>
+                <MudTextField @bind-Value="@userInfo.Email" Variant="Variant.Outlined" Label="Email" />
+                <ValidationMessage For="@(() => userInfo.Email)" />
+                <MudTextField @bind-Value="userInfo.Password" Variant="Variant.Outlined" HelperText="Obligatorio: Mayuscula/Minuscula/Numero/Caracter Especial." Label="Contraseña" InputType="@InputContraseña" Adornment="Adornment.End" AdornmentIcon="@ContraseñaInputIcon" OnAdornmentClick="ButtonTestclick" />
+                <ValidationMessage For="@(() => userInfo.Password)" />
+            </div>
+        </div>
+        <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Success">Registrarse</MudButton>
+    </MudPaper>
+</EditForm>
+
+@code {
+    private UserInfo userInfo = new UserInfo();
+
+    private async Task CrearUsuario()
+    {
+        var httpResponse = await repositorio.Post<UserInfo, UserToken>("api/cuentas/crear", userInfo);
+
+        if (httpResponse.Error)
+        {
+            await mostrarMensajes.MostrarMensajeError(await httpResponse.GetBody());
+        }
+        else
+        {
+            await loginService.Login(httpResponse.Response);
+            navigationManager.NavigateTo("");
+        }
+    }
+
+    //ver o esconder contraseña
+    bool isShow;
+    InputType InputContraseña = InputType.Password;
+    string ContraseñaInputIcon = Icons.Material.Filled.VisibilityOff;
+
+    void ButtonTestclick()
+    {
+        @if (isShow)
+        {
+            isShow = false;
+            ContraseñaInputIcon = Icons.Material.Filled.VisibilityOff;
+            InputContraseña = InputType.Password;
+        }
+        else
+        {
+            isShow = true;
+            ContraseñaInputIcon = Icons.Material.Filled.Visibility;
+            InputContraseña = InputType.Text;
+        }
+    }
+}
