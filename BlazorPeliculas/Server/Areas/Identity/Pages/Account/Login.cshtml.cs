@@ -50,7 +50,7 @@ namespace BlazorPeliculas.Server.Areas.Identity.Pages.Account
             [DataType(DataType.Password)]
             public string Password { get; set; }
 
-            [Display(Name = "Remember me?")]
+            [Display(Name = "¿Recordarte?")]
             public bool RememberMe { get; set; }
         }
 
@@ -98,11 +98,10 @@ namespace BlazorPeliculas.Server.Areas.Identity.Pages.Account
                 }
                 else
                 {
-                    ModelState.AddModelError(string.Empty, "Invalid login attempt.");
+                    ModelState.AddModelError(string.Empty, "Inicio De Sesion Invalido.");
                     return Page();
                 }
             }
-
             // If we got this far, something failed, redisplay form
             return Page();
         }

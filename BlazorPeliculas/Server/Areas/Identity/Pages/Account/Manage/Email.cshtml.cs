@@ -43,9 +43,9 @@ namespace BlazorPeliculas.Server.Areas.Identity.Pages.Account.Manage
 
         public class InputModel
         {
-            [Required]
+            [Required (ErrorMessage = "Debes Escribir un Nuevo Email")]
             [EmailAddress]
-            [Display(Name = "New email")]
+            [Display(Name = "Nuevo email")]
             public string NewEmail { get; set; }
         }
 
@@ -108,7 +108,8 @@ namespace BlazorPeliculas.Server.Areas.Identity.Pages.Account.Manage
                 return RedirectToPage();
             }
 
-            StatusMessage = "Your email is unchanged.";
+            StatusMessage = "Su email no ha cambiado.";
+            StatusMessage = "Su email no ha cambiado.";
             return RedirectToPage();
         }
 
