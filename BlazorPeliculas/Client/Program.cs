@@ -1,7 +1,7 @@
-using BlazorPeliculas.Client.Auth;
 using BlazorPeliculas.Client.Helpers;
 using BlazorPeliculas.Client.Repositorios;
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -22,10 +22,16 @@ namespace BlazorPeliculas.Client
             var builder = WebAssemblyHostBuilder.CreateDefault(args);
             builder.RootComponents.Add<App>("#app");
 
-            builder.Services.AddSingleton(sp => 
-            new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
-            builder.Services.AddMudServices();
+            builder.Services.AddHttpClient<HttpClientConToken>(
+                Cliente => Cliente.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress))
+                .AddHttpMessageHandler<BaseAddressAuthorizationMessageHandler>();
 
+            //configuracion de token sin logearse.
+            builder.Services.AddHttpClient<HttpClientSinToken>(
+                Cliente => Cliente.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress));
+
+
+            builder.Services.AddMudServices();
             ConfigureServices(builder.Services);
 
             await builder.Build().RunAsync();
@@ -33,18 +39,11 @@ namespace BlazorPeliculas.Client
 
         private static void ConfigureServices(IServiceCollection services)
         {
+            services.AddOptions();
             services.AddScoped<IRepositorio, Repositorio>();
             services.AddScoped<IMostrarMensajes, MostrarMensajes>();
-            services.AddAuthorizationCore();
-            services.AddScoped<ProveedorAutenticacionJWT>();
+            services.AddApiAuthorization();
 
-            services.AddScoped<AuthenticationStateProvider, ProveedorAutenticacionJWT>(
-                provider => provider.GetRequiredService<ProveedorAutenticacionJWT>());
-
-            services.AddScoped<ILoginService, ProveedorAutenticacionJWT>(
-               provider => provider.GetRequiredService<ProveedorAutenticacionJWT>());
-
-            services.AddScoped<RenovadorToken>();
         }
     }
 }

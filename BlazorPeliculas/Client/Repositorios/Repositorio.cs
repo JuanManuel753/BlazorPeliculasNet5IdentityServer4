@@ -5,24 +5,38 @@ using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using BlazorPeliculas.Client.Helpers;
 using BlazorPeliculas.Shared.Entidades;
 
 namespace BlazorPeliculas.Client.Repositorios
 {
     public class Repositorio : IRepositorio
     {
-        private readonly HttpClient httpClient;
+        private readonly HttpClientConToken _httpClientConToken;
+        private readonly HttpClientSinToken _httpClientSinToken;
 
-        public Repositorio(HttpClient httpClient)
+        public Repositorio(HttpClientConToken httpClientConToken, HttpClientSinToken httpClientSinToken)
         {
-            this.httpClient = httpClient;
+            _httpClientConToken = httpClientConToken;
+            _httpClientSinToken = httpClientSinToken;
         }
 
         private JsonSerializerOptions OpcionesPorDefectoJSON =>
             new JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
 
-        public async Task<HttpResponseWrapper<T>> Get<T>(string url)
+        public async Task<HttpResponseWrapper<T>> Get<T>(string url, bool incluirToken = true)
         {
+            HttpClient httpClient;
+
+            if(incluirToken)
+            {
+                httpClient = _httpClientConToken.HttpClient;
+            }
+            else
+            {
+                httpClient = _httpClientSinToken.HttpClient;
+            }
+
             var responseHTTP = await httpClient.GetAsync(url);
 
             if (responseHTTP.IsSuccessStatusCode)
@@ -40,7 +54,7 @@ namespace BlazorPeliculas.Client.Repositorios
         {
             var enviarJSON = JsonSerializer.Serialize(enviar);
             var enviarContent = new StringContent(enviarJSON, Encoding.UTF8, "application/json");
-            var responseHttp = await httpClient.PostAsync(url, enviarContent);
+            var responseHttp = await _httpClientConToken.HttpClient.PostAsync(url, enviarContent);
             return new HttpResponseWrapper<object>(null, !responseHttp.IsSuccessStatusCode, responseHttp);
         }
 
@@ -48,7 +62,7 @@ namespace BlazorPeliculas.Client.Repositorios
         {
             var enviarJSON = JsonSerializer.Serialize(enviar);
             var enviarContent = new StringContent(enviarJSON, Encoding.UTF8, "application/json");
-            var responseHttp = await httpClient.PutAsync(url, enviarContent);
+            var responseHttp = await _httpClientConToken.HttpClient.PutAsync(url, enviarContent);
             return new HttpResponseWrapper<object>(null, !responseHttp.IsSuccessStatusCode, responseHttp);
         }
 
@@ -56,7 +70,7 @@ namespace BlazorPeliculas.Client.Repositorios
         {
             var enviarJSON = JsonSerializer.Serialize(enviar);
             var enviarContent = new StringContent(enviarJSON, Encoding.UTF8, "application/json");
-            var responseHttp = await httpClient.PostAsync(url, enviarContent);
+            var responseHttp = await _httpClientConToken.HttpClient.PostAsync(url, enviarContent);
             if (responseHttp.IsSuccessStatusCode)
             {
                 var response = await DeserializarRespuesta<TResponse>(responseHttp, OpcionesPorDefectoJSON);
@@ -70,7 +84,7 @@ namespace BlazorPeliculas.Client.Repositorios
 
         public async Task<HttpResponseWrapper<object>> Delete(string url)
         {
-            var responseHTTP = await httpClient.DeleteAsync(url);
+            var responseHTTP = await _httpClientConToken.HttpClient.DeleteAsync(url);
             return new HttpResponseWrapper<object>(null, !responseHTTP.IsSuccessStatusCode, responseHTTP);
         }
 
